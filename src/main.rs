@@ -2,6 +2,7 @@ mod help;
 mod list;
 mod read;
 mod search;
+mod util;
 mod version;
 
 use crate::help::print_help;
@@ -9,12 +10,15 @@ use crate::list::list_files;
 use read::read_content;
 use search::search_files;
 use std::process;
+use std::sync::atomic::AtomicUsize;
+use std::sync::Arc;
+use util::progress::ProgressSpinner;
 use version::print_version;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 {
-        println!("Use help to action");
+        print_help();
         return;
     }
     let command = &args[1];
@@ -29,7 +33,23 @@ fn main() {
             }
             let query = &args[2];
             let current_dir = std::env::current_dir().expect("无法获取当前目录");
-            search_files(query, &current_dir);
+            let file_count = Arc::new(AtomicUsize::new(0));
+
+            let loading = ProgressSpinner::new("正在查询中", 0);
+
+            let results = search_files(query, &current_dir, &file_count, &loading);
+
+            loading.finish("查询结束".to_string());
+
+            if results.is_empty() {
+                println!("没有匹配到 {} 的文件", query)
+            } else {
+                loading.update_message(format!("查询结束，总共有{}个文件", results.len()));
+                //println!("", results.len());
+                for path in results {
+                    println!("{}", path.display())
+                }
+            }
         }
         "read" | "cat" => {
             if args.len() < 3 {

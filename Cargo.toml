@@ -5,3 +5,5 @@ authors = ["https://github.com/learner-pm"]
 edition = "2021"
 
 [dependencies]
+rayon = "1.5"
+indicatif = "0.17"

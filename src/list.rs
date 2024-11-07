@@ -14,9 +14,9 @@ fn transform_files(entries: ReadDir) -> Vec<String> {
                         .and_then(|n| n.to_str())
                         .unwrap_or_default();
                     if e.path().is_file() {
-                        format!("文件：{}", name)
+                        format!("文件：  {}", name)
                     } else if e.path().is_dir() {
-                        format!("文件夹：{}", name)
+                        format!("\x1b[33m文件夹\x1b[0m ：{}", name)
                     } else {
                         String::new()
                     }
@@ -34,7 +34,7 @@ pub fn list_files() {
             return;
         }
     };
-    println!("{}", current_dir.display());
+    //println!("{}", current_dir.display());
     let entries = match fs::read_dir(&current_dir) {
         Ok(entries) => entries,
         Err(e) => {
